@@ -6,7 +6,7 @@
 
  [x] Implementar docker
   [] Implementar docker modo desenvolvimento e produção
- [] Implementar fast realod
+ [x] Implementar fast realod
  [] Adicionar redis
  [] Implementar cadastro dos limites
  [] Implementar verificação e aplicação de limite
