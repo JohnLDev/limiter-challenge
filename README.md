@@ -1,0 +1,13 @@
+# Objetivo
+ - Limitar requisições por segundo
+ - Limitar baseado em token e IP
+  - Token > IP
+ - Utilizar redis
+
+ [x] Implementar docker
+  [] Implementar docker modo desenvolvimento e produção
+ [] Implementar fast realod
+ [] Adicionar redis
+ [] Implementar cadastro dos limites
+ [] Implementar verificação e aplicação de limite
+ [] Implementar formato de middleware
