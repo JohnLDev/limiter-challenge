@@ -5,7 +5,7 @@
  - Utilizar redis
 
  [x] Implementar docker
-  [] Implementar docker modo desenvolvimento e produção
+  [x] Implementar docker modo desenvolvimento e produção
  [x] Implementar fast realod
  [] Adicionar redis
  [] Implementar cadastro dos limites
