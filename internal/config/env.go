@@ -3,8 +3,8 @@ package config
 import "github.com/spf13/viper"
 
 type config struct {
-	ServiceName string `mapstructure:"SERVICE_NAME"`
-	Port        int    `mapstructure:"PORT"`
+	ServiceName  string `mapstructure:"SERVICE_NAME"`
+	LimitByToken int    `mapstructure:"PORT"`
 }
 
 var Conf *config

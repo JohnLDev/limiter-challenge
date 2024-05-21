@@ -9,7 +9,7 @@ import (
 )
 
 func main() {
-	slog.Info("Starting server", slog.String("service_name", config.Conf.ServiceName), slog.Int("port", config.Conf.Port))
+	slog.Info("Starting server", slog.String("service_name", config.Conf.ServiceName))
 
 	mux := http.NewServeMux()
 
@@ -19,5 +19,5 @@ func main() {
 		w.Write([]byte("Hello, World!"))
 	})
 
-	http.ListenAndServe(fmt.Sprintf(":%d", config.Conf.Port), mux)
+	http.ListenAndServe(":8080", mux)
 }
