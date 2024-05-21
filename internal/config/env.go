@@ -13,7 +13,11 @@ type ConfiguredTokens struct {
 }
 
 type config struct {
-	RateLimit int `mapstructure:"RATE_LIMIT"`
+	RateLimit int    `mapstructure:"RATE_LIMIT"`
+	DbPort    int    `mapstructure:"DB_PORT"`
+	DbName    string `mapstructure:"DB_NAME"`
+	DbHost    string `mapstructure:"DB_HOST"`
+	DbPass    string `mapstructure:"DB_PASS"`
 	Tokens    []ConfiguredTokens
 }
 

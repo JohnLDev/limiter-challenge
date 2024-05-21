@@ -7,6 +7,29 @@ services:
       context: .
       dockerfile: Dockerfile.dev
     ports:
-      - "3000:3000"
+      - "8080:8080"
     volumes:
       - .:/app
+    depends_on:
+      - redis
+  redis:
+    image: redis:latest
+    restart: always
+    ports:
+      - "${DB_PORT}:${DB_PORT}"
+    volumes:
+      - ./.docker/redis:/root/redis
+      # - /path/to/local/redis.conf:/usr/local/etc/redis/redis.conf
+    environment:
+      - REDIS_PASSWORD=${DB_PASS}
+      - REDIS_PORT=${DB_PORT}
+      - REDIS_DATABASES=16
+  redis-commander:
+    image: ghcr.io/joeferner/redis-commander:latest
+    restart: always
+    environment:
+    - REDIS_HOSTS=${DB_NAME}:${DB_HOST}:${DB_PORT}
+    ports:
+    - "8081:8081"
+    depends_on:
+      - redis
