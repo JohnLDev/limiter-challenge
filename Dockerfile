@@ -12,6 +12,7 @@ WORKDIR /go/app
 
 COPY --from=builder /go/app/main .
 COPY --from=builder /go/app/.env .
+COPY tokens.json .
 
 ENTRYPOINT [ "./main" ]
 

@@ -1,17 +1,26 @@
 package config
 
-import "github.com/spf13/viper"
+import (
+	"encoding/json"
+	"os"
+
+	"github.com/spf13/viper"
+)
+
+type ConfiguredTokens struct {
+	Token string `json:"token"`
+	Limit int    `json:"limit"`
+}
 
 type config struct {
-	ServiceName  string `mapstructure:"SERVICE_NAME"`
-	LimitByToken int    `mapstructure:"PORT"`
+	RateLimit int `mapstructure:"RATE_LIMIT"`
+	Tokens    []ConfiguredTokens
 }
 
 var Conf *config
 
 func loadConfig(path string) (*config, error) {
 	var cfg *config
-	viper.SetDefault("PORT", 3001)
 	viper.SetConfigName("app_config")
 	viper.SetConfigType("env")
 	viper.AddConfigPath(path)
@@ -27,6 +36,17 @@ func loadConfig(path string) (*config, error) {
 	}
 	return cfg, err
 }
+func loadTokens() {
+	Json, err := os.ReadFile("tokens.json")
+	if err != nil {
+		panic(err)
+	}
+
+	err = json.Unmarshal(Json, &Conf.Tokens)
+	if err != nil {
+		panic(err)
+	}
+}
 
 func init() {
 	cfg, err := loadConfig(".")
@@ -34,4 +54,5 @@ func init() {
 		panic(err)
 	}
 	Conf = cfg
+	loadTokens()
 }
