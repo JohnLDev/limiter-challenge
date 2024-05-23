@@ -11,7 +11,7 @@ func main() {
 
 	mux := http.NewServeMux()
 
-	fmt.Println(config.Conf)
+	fmt.Println(config.GetConfig())
 	mux.HandleFunc("POST /{id}", func(w http.ResponseWriter, r *http.Request) {
 		fmt.Println(r.PathValue("id"))
 		w.WriteHeader(http.StatusOK)
