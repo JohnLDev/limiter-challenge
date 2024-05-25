@@ -2,11 +2,16 @@ package usecases
 
 import (
 	"context"
+	"fmt"
 	"log/slog"
+	"sync"
 
+	"github.com/docker/distribution/uuid"
 	"github.com/johnldev/rate-limiter/internal/config"
 	"github.com/johnldev/rate-limiter/internal/interfaces"
 )
+
+var mutex = new(sync.Mutex)
 
 type RateLimitUseCase struct {
 	repository interfaces.Repository
@@ -19,35 +24,59 @@ type RateLimitInput struct {
 }
 
 func (u *RateLimitUseCase) Execute(input RateLimitInput) (bool, error) {
+
 	if input.Ip == "" || input.Token == "" {
 		return false, nil
 	}
+	mutex.Lock()
+	defer mutex.Unlock()
+
 	isAllowed := true
+	var key = input.Ip
+	var limit = u.conf.RateLimit
 
-	if limit, ok := u.conf.Tokens[input.Token]; ok {
+	if tokenLimit, ok := u.conf.Tokens[input.Token]; ok {
 		// ? verify by token
-		access, err := u.repository.GetAccessByToken(input.Token)
-		if err != nil {
-			slog.Error(err.Error())
-			return false, err
-		}
-		if access > limit {
-			slog.Info("rate limit exceeded by token")
-			isAllowed = false
-		}
-	} else {
-		// ? verify by ip
-		access, err := u.repository.GetAccessByIp(input.Ip)
+		limit = tokenLimit
+		key = input.Token
+	}
+
+	blocked, err := u.repository.CheckLock(key)
+	if err != nil {
+		slog.Error(err.Error())
+		return false, err
+	}
+	if blocked {
+		slog.Info(fmt.Sprintf("key %s is blocked", key))
+		return false, nil
+	}
+
+	access, err := u.repository.Count(key)
+	if err != nil {
+		slog.Error(err.Error())
+		return false, err
+	}
+
+	if access >= limit {
+		slog.Info("rate limit exceeded")
+		err = u.repository.LockKey(key)
+
 		if err != nil {
 			slog.Error(err.Error())
 			return false, err
 		}
 
-		if access > u.conf.RateLimit {
-			slog.Info("rate limit exceeded by ip")
-			isAllowed = false
+		isAllowed = false
+	}
+
+	if isAllowed {
+		err = u.repository.Save(key, uuid.Generate().String())
+		if err != nil {
+			slog.Error(err.Error())
+			return false, err
 		}
 	}
+
 	return isAllowed, nil
 }
 

@@ -35,8 +35,9 @@ func (suite *RateLimitTestSuite) Test_Verify_Success() {
 		Token: "token",
 		Ip:    "ip",
 	}
-	suite.repository.On("GetAccessByIp", mock.Anything).Return(0, nil)
-	suite.repository.On("GetAccessByToken", mock.Anything).Return(0, nil)
+	suite.repository.On("Count", input.Token).Return(0, nil)
+	suite.repository.On("CheckLock", input.Token).Return(false, nil)
+	suite.repository.On("Save", input.Token, mock.Anything).Return(nil)
 
 	allowed, err := suite.useCase.Execute(input)
 	assert.Nil(t, err)
@@ -48,8 +49,9 @@ func (suite *RateLimitTestSuite) Test_Verify_FailByIp() {
 		Token: "token312",
 		Ip:    "ip",
 	}
-	suite.repository.On("GetAccessByIp", mock.Anything).Return(3, nil)
-	suite.repository.On("GetAccessByToken", mock.Anything).Return(0, nil)
+	suite.repository.On("CheckLock", input.Ip).Return(false, nil)
+	suite.repository.On("Count", input.Ip).Return(2, nil)
+	suite.repository.On("LockKey", input.Ip).Return(nil)
 
 	allowed, err := suite.useCase.Execute(input)
 	assert.Nil(t, err)
@@ -62,14 +64,113 @@ func (suite *RateLimitTestSuite) Test_Verify_FailByToken() {
 		Token: "token",
 		Ip:    "ip",
 	}
-	suite.repository.On("GetAccessByIp", mock.Anything).Return(0, nil)
-	suite.repository.On("GetAccessByToken", mock.Anything).Return(3, nil)
+	suite.repository.On("Count", input.Token).Return(2, nil)
+	suite.repository.On("CheckLock", input.Token).Return(false, nil)
+	suite.repository.On("LockKey", input.Token).Return(nil)
 
 	allowed, err := suite.useCase.Execute(input)
 	assert.Nil(t, err)
 	assert.False(t, allowed)
 }
 
+func (suite *RateLimitTestSuite) Test_Key_Locked() {
+	t := suite.T()
+	input := usecases.RateLimitInput{
+		Token: "token",
+		Ip:    "ip",
+	}
+	suite.repository.On("CheckLock", input.Token).Return(true, nil)
+
+	allowed, err := suite.useCase.Execute(input)
+	assert.Nil(t, err)
+	assert.False(t, allowed)
+}
+
+func (suite *RateLimitTestSuite) Test_Error_Checking_Lock() {
+
+	t := suite.T()
+	input := usecases.RateLimitInput{
+		Token: "token",
+		Ip:    "ip",
+	}
+	suite.repository.On("CheckLock", input.Token).Return(false, assert.AnError)
+
+	allowed, err := suite.useCase.Execute(input)
+	assert.NotNil(t, err)
+	assert.False(t, allowed)
+}
+
+func (suite *RateLimitTestSuite) Test_Error_Count() {
+
+	t := suite.T()
+	input := usecases.RateLimitInput{
+		Token: "token",
+		Ip:    "ip",
+	}
+	suite.repository.On("CheckLock", input.Token).Return(false, nil)
+	suite.repository.On("Count", input.Token).Return(0, assert.AnError)
+
+	allowed, err := suite.useCase.Execute(input)
+	assert.NotNil(t, err)
+	assert.False(t, allowed)
+}
+
+func (suite *RateLimitTestSuite) Test_Error_LockKey() {
+
+	t := suite.T()
+	input := usecases.RateLimitInput{
+		Token: "token",
+		Ip:    "ip",
+	}
+	suite.repository.On("CheckLock", input.Token).Return(false, nil)
+	suite.repository.On("Count", input.Token).Return(2, nil)
+	suite.repository.On("LockKey", input.Token).Return(assert.AnError)
+
+	allowed, err := suite.useCase.Execute(input)
+	assert.NotNil(t, err)
+	assert.False(t, allowed)
+}
+
+func (suite *RateLimitTestSuite) Test_Error_Save() {
+
+	t := suite.T()
+	input := usecases.RateLimitInput{
+		Token: "token",
+		Ip:    "ip",
+	}
+	suite.repository.On("CheckLock", input.Token).Return(false, nil)
+	suite.repository.On("Count", input.Token).Return(1, nil)
+	suite.repository.On("LockKey", input.Token).Return(nil)
+	suite.repository.On("Save", input.Token, mock.Anything).Return(assert.AnError)
+
+	allowed, err := suite.useCase.Execute(input)
+	assert.NotNil(t, err)
+	assert.False(t, allowed)
+}
+
+func (suite *RateLimitTestSuite) Test_Token_Missing() {
+
+	t := suite.T()
+	input := usecases.RateLimitInput{
+		Ip: "ip",
+	}
+
+	allowed, err := suite.useCase.Execute(input)
+	assert.Nil(t, err)
+	assert.False(t, allowed)
+}
+
+func (suite *RateLimitTestSuite) Test_Ip_Missing() {
+
+	t := suite.T()
+	input := usecases.RateLimitInput{
+		Token: "Token",
+	}
+
+	allowed, err := suite.useCase.Execute(input)
+	assert.Nil(t, err)
+	assert.False(t, allowed)
+}
 func TestRateLimit(t *testing.T) {
 	suite.Run(t, new(RateLimitTestSuite))
 }

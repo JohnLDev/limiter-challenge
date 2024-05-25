@@ -17,7 +17,7 @@ include_ext = ["go", "tpl", "tmpl", "html"]
 # Ignore these filename extensions or directories.
 exclude_dir = ["assets", "tmp", "vendor", "frontend/node_modules"]
 # Watch these directories if you specified.
-include_dir = ["internal", "cmd", "pkg", "config", "graph"]
+include_dir = ["internal/**", "cmd", "pkg", "config", "graph"]
 # Watch these files.
 include_file = []
 # Exclude files.

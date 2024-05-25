@@ -1,22 +1,17 @@
 package main
 
 import (
-	"fmt"
 	"net/http"
 
-	"github.com/johnldev/rate-limiter/internal/config"
+	"github.com/johnldev/rate-limiter/internal/middlewares"
 )
 
 func main() {
-
 	mux := http.NewServeMux()
-
-	fmt.Println(config.GetConfig())
-	mux.HandleFunc("POST /{id}", func(w http.ResponseWriter, r *http.Request) {
-		fmt.Println(r.PathValue("id"))
+	mux.Handle("GET /", middlewares.RateLimitMiddlawere(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusOK)
 		w.Write([]byte("Hello, World!"))
-	})
+	})))
 
 	http.ListenAndServe(":8080", mux)
 }
