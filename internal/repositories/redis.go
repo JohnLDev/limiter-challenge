@@ -12,6 +12,7 @@ import (
 type RedisRepository struct {
 	conn *redis.Client
 	ctx  context.Context
+	conf config.Config
 }
 
 func (r *RedisRepository) Count(key string) (int, error) {
@@ -49,18 +50,17 @@ func (r *RedisRepository) CheckLock(key string) (bool, error) {
 func (r *RedisRepository) LockKey(key string) error {
 	redisKey := fmt.Sprintf("lock:%s", key)
 
-	err := r.conn.Set(r.ctx, redisKey, redisKey, time.Millisecond*time.Duration(config.GetConfig().BlockTime)).Err()
+	err := r.conn.Set(r.ctx, redisKey, redisKey, time.Millisecond*time.Duration(r.conf.BlockTime)).Err()
 	return err
 
 }
 
-func NewRedisRepository(ctx context.Context) *RedisRepository {
-	config := config.GetConfig()
+func NewRedisRepository(ctx context.Context, config config.Config) *RedisRepository {
 	rdb := redis.NewClient(&redis.Options{
 		Addr:     fmt.Sprintf("%s:%d", config.DbHost, config.DbPort),
 		Password: config.DbPass,
 		DB:       0,
 	})
 
-	return &RedisRepository{conn: rdb, ctx: ctx}
+	return &RedisRepository{conn: rdb, ctx: ctx, conf: config}
 }

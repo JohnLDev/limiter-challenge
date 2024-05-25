@@ -16,8 +16,11 @@ const (
 func RateLimitMiddlawere(next http.Handler) http.Handler {
 
 	fn := func(w http.ResponseWriter, r *http.Request) {
-
-		useCase := usecases.NewRateLimitUseCase(r.Context(), repositories.NewRedisRepository(r.Context()), *config.GetConfig())
+		conf := config.GetConfig()
+		useCase := usecases.NewRateLimitUseCase(r.Context(),
+			// ? the use case will accept any struct that implements the Repository interface
+			repositories.NewRedisRepository(r.Context(), *conf),
+			*conf)
 
 		ip, _, err := net.SplitHostPort(r.RemoteAddr)
 		if err != nil {
