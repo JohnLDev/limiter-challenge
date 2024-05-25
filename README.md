@@ -21,6 +21,6 @@
 
 ## Informações
 
-- É possível facilmente alterar o mecanismo de persistência apenas criando uma struct que implemente a interface de repositório `interfaces.Repository` e utiliza-al
+- É possível facilmente alterar o mecanismo de persistência apenas criando uma struct que implemente a interface de repositório `interfaces.Repository` e utiliza-la durante a criação do use case
 - Foram realizados testes unitários para garantir a lógica do limiter
 - Foram realizados testes de integração utilizando test containers para garantir a funcionalidade em situações de carga elevada
