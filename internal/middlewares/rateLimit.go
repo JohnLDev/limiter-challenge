@@ -28,11 +28,6 @@ func RateLimitMiddlawere(next http.Handler) http.Handler {
 			return
 		}
 		token := r.Header.Get("API_KEY")
-		if token == "" {
-			w.WriteHeader(http.StatusUnauthorized)
-			w.Write([]byte("API_KEY is required"))
-			return
-		}
 
 		canGo, err := useCase.Execute(usecases.RateLimitInput{
 			Token: token,

@@ -25,9 +25,10 @@ type RateLimitInput struct {
 
 func (u *RateLimitUseCase) Execute(input RateLimitInput) (bool, error) {
 
-	if input.Ip == "" || input.Token == "" {
+	if input.Ip == "" {
 		return false, nil
 	}
+
 	mutex.Lock()
 	defer mutex.Unlock()
 
@@ -35,10 +36,12 @@ func (u *RateLimitUseCase) Execute(input RateLimitInput) (bool, error) {
 	var key = input.Ip
 	var limit = u.conf.RateLimit
 
-	if tokenLimit, ok := u.conf.Tokens[input.Token]; ok {
-		// ? verify by token
-		limit = tokenLimit
-		key = input.Token
+	if input.Token != "" {
+		if tokenLimit, ok := u.conf.Tokens[input.Token]; ok {
+			// ? verify by token
+			limit = tokenLimit
+			key = input.Token
+		}
 	}
 
 	blocked, err := u.repository.CheckLock(key)

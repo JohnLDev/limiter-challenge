@@ -148,18 +148,6 @@ func (suite *RateLimitTestSuite) Test_Error_Save() {
 	assert.False(t, allowed)
 }
 
-func (suite *RateLimitTestSuite) Test_Token_Missing() {
-
-	t := suite.T()
-	input := usecases.RateLimitInput{
-		Ip: "ip",
-	}
-
-	allowed, err := suite.useCase.Execute(input)
-	assert.Nil(t, err)
-	assert.False(t, allowed)
-}
-
 func (suite *RateLimitTestSuite) Test_Ip_Missing() {
 
 	t := suite.T()
